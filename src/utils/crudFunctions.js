@@ -8,6 +8,12 @@ async function readTalker() {
   return JSON.parse(talkers);
 }
 
+async function writeTalker(talkers) {
+  const newTalkers = JSON.stringify(talkers);
+  await fs.writeFile('src/talker.json', newTalkers);
+}
+
 module.exports = {
     readTalker,
+    writeTalker,
 };

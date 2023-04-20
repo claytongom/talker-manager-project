@@ -1,5 +1,13 @@
 const express = require('express');
-const { readTalker } = require('../utils/crudFunctions');
+const { readTalker, writeTalker } = require('../utils/crudFunctions');
+const { 
+    validateToken,
+    validateName,
+    validateAge,
+    validateTalk,
+    validateWatchedAt,
+    validateRate,
+} = require('./midlewares/validationtalker');
 
 // Cria um objeto de rota
 const talkerRoutes = express.Router();
@@ -25,6 +33,34 @@ talkerRoutes.get('/:id', async (req, res) => {
     }
     // Retorna a pessoa palestrante encontrada
     return res.status(200).json(foundTalker);
+});
+
+const newValidations = [
+    validateToken,
+    validateName,
+    validateAge,
+    validateTalk,
+    validateWatchedAt,
+    validateRate,
+];
+
+talkerRoutes.post('/', newValidations, async (req, res, next) => {
+    try {
+        const { name, age, talk: { watchedAt, rate } } = req.body;
+        const talkers = await readTalker();
+        const newTalker = {
+            id: talkers.length + 1,
+            name,
+            age,
+            talk: { watchedAt, rate }
+        };
+        talkers.push(newTalker);
+        await writeTalker(talkers);
+        res.status(201).json(newTalker);        
+    }
+    catch (err) {
+        next(err);
+    }
 });
 
 module.exports = talkerRoutes;
