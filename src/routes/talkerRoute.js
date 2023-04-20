@@ -7,7 +7,7 @@ const {
     validateTalk,
     validateWatchedAt,
     validateRate,
-} = require('./midlewares/validationtalker');
+} = require('./midlewares/validationTalker');
 
 // Cria um objeto de rota
 const talkerRoutes = express.Router();
@@ -44,22 +44,40 @@ const newValidations = [
     validateRate,
 ];
 
-talkerRoutes.post('/', newValidations, async (req, res, next) => {
+// talkerRoutes.post('/', newValidations, async (req, res, next) => {
+//     try {
+//         const { name, age, talk: { watchedAt, rate } } = req.body;
+//         const talkers = await readTalker();
+//         const newTalker = {
+//             id: talkers.length + 1,
+//             name,
+//             age,
+//             talk: { watchedAt, rate }
+//         };
+//         talkers.push(newTalker);
+//         await writeTalker(talkers);
+//         res.status(201).json(newTalker);        
+//     }
+//     catch (err) {
+//         next(err);
+//     }
+// });
+
+talkerRoutes.post('/', newValidations, async (req, res) => {
     try {
-        const { name, age, talk: { watchedAt, rate } } = req.body;
         const talkers = await readTalker();
+        const { name, age, talk } = req.body;
         const newTalker = {
             id: talkers.length + 1,
             name,
             age,
-            talk: { watchedAt, rate }
+            talk,
         };
         talkers.push(newTalker);
         await writeTalker(talkers);
-        res.status(201).json(newTalker);        
-    }
-    catch (err) {
-        next(err);
+        res.status(201).json(newTalker);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 
