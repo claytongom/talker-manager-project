@@ -1,6 +1,6 @@
 const express = require('express');
 const { readTalker, writeTalker } = require('../utils/crudFunctions');
-const { 
+const {
     validateToken,
     validateName,
     validateAge,
@@ -17,6 +17,21 @@ talkerRoutes.get('/', async (_req, res) => {
     const talkers = await readTalker();
     // Retorna uma resposta JSON com os dados lidos e status 200
     res.status(200).json(talkers);
+});
+
+talkerRoutes.get('/search', validateToken, async (req, res) => {
+    try {
+        const { q } = req.query;
+        const talkers = await readTalker();
+        let filteredTalkers = talkers;
+        if (q) {
+            filteredTalkers = talkers.filter((talker) =>
+                talker.name.toLowerCase().includes(q.toLowerCase()));
+        }
+        res.status(200).json(filteredTalkers);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 // Adiciona uma nova rota para '/talker/:id'
@@ -64,23 +79,23 @@ talkerRoutes.post('/', newValidations, async (req, res) => {
 
 talkerRoutes.put('/:id', newValidations, async (req, res) => {
     try {
-      const { id } = req.params;
-      const talkers = await readTalker();
-      const foundTalker = talkers.find((talker) => talker.id === Number(id));
-      if (!foundTalker) {
-        return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
-      }
-      const { name, age, talk } = req.body;
-      const updatedTalker = { id: Number(id), name, age, talk };
-      const updatedTalkers = talkers.map((talker) => (
-        talker.id === Number(id) ? updatedTalker : talker
-      ));
-      await writeTalker(updatedTalkers);
-      res.status(200).json(updatedTalker);
+        const { id } = req.params;
+        const talkers = await readTalker();
+        const foundTalker = talkers.find((talker) => talker.id === Number(id));
+        if (!foundTalker) {
+            return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+        }
+        const { name, age, talk } = req.body;
+        const updatedTalker = { id: Number(id), name, age, talk };
+        const updatedTalkers = talkers.map((talker) => (
+            talker.id === Number(id) ? updatedTalker : talker
+        ));
+        await writeTalker(updatedTalkers);
+        res.status(200).json(updatedTalker);
     } catch (err) {
-      res.status(500).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
-  });
+});
 
 talkerRoutes.delete('/:id', validateToken, async (req, res) => {
     try {
