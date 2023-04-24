@@ -44,25 +44,6 @@ const newValidations = [
     validateRate,
 ];
 
-// talkerRoutes.post('/', newValidations, async (req, res, next) => {
-//     try {
-//         const { name, age, talk: { watchedAt, rate } } = req.body;
-//         const talkers = await readTalker();
-//         const newTalker = {
-//             id: talkers.length + 1,
-//             name,
-//             age,
-//             talk: { watchedAt, rate }
-//         };
-//         talkers.push(newTalker);
-//         await writeTalker(talkers);
-//         res.status(201).json(newTalker);        
-//     }
-//     catch (err) {
-//         next(err);
-//     }
-// });
-
 talkerRoutes.post('/', newValidations, async (req, res) => {
     try {
         const talkers = await readTalker();
@@ -80,5 +61,25 @@ talkerRoutes.post('/', newValidations, async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+talkerRoutes.put('/:id', newValidations, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const talkers = await readTalker();
+      const foundTalker = talkers.find((talker) => talker.id === Number(id));
+      if (!foundTalker) {
+        return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+      }
+      const { name, age, talk } = req.body;
+      const updatedTalker = { id: Number(id), name, age, talk };
+      const updatedTalkers = talkers.map((talker) => (
+        talker.id === Number(id) ? updatedTalker : talker
+      ));
+      await writeTalker(updatedTalkers);
+      res.status(200).json(updatedTalker);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });  
 
 module.exports = talkerRoutes;
