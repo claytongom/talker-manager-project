@@ -80,6 +80,22 @@ talkerRoutes.put('/:id', newValidations, async (req, res) => {
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
-  });  
+  });
+
+talkerRoutes.delete('/:id', validateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const talkers = await readTalker();
+        const foundTalker = talkers.find((talker) => talker.id === Number(id));
+        if (!foundTalker) {
+            return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+        }
+        const updatedTalkers = talkers.filter((talker) => talker.id !== Number(id));
+        await writeTalker(updatedTalkers);
+        return res.status(204).send();
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+});
 
 module.exports = talkerRoutes;
